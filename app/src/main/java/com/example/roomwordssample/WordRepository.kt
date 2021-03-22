@@ -8,26 +8,26 @@ import androidx.room.Room
 
 
 class WordRepository(application: Application, context: Context) {
-    val db = Room.databaseBuilder(
+    private val db = Room.databaseBuilder(
         context.applicationContext,
         WordRoomDatabase::class.java, "word_database"
-    )
-        .build()
+    ).build()
+
     private var mWordDao: WordDao = db.wordDao()
     private var mAllWords: LiveData<List<Word>> = mWordDao.getAllWords()
 
-    fun getAllWords(): LiveData<List<Word>> {
-        return mAllWords
+    fun getAllWords(): LiveData<List<Word>> = mAllWords
+
+    fun insert(word: Word) {
+        InsertAsyncTask(mWordDao).execute(word)
     }
 
-    fun insert(word: Word): Void {
-         InsertAsyncTask(mWordDao).execute(word);
-    }
-    inner class insertAsyncTask internal constructor(private val mAsyncTaskDao: WordDao) :
-        AsyncTask<Word?, Void?, Void?>() {
-        protected override fun doInBackground(vararg params: Word): Void? {
-            mAsyncTaskDao.insert(params[0])
-            return null
+    companion object {
+        @Suppress("DEPRECATION")
+        class InsertAsyncTask(private val mAsyncTaskDao: WordDao) : AsyncTask<Word, Void?, Void?>() {
+
+            override fun doInBackground(vararg params: Word):Void =
+                mAsyncTaskDao.insert(params[0])
         }
     }
 
